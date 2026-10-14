@@ -105,8 +105,7 @@ docker run -d \
 My Account (ícono superior derecho) → Security → Generate Tokens
 → Name: jenkins-token
 → Type: Global Analysis Token
-→ Generate → token generado:
-            squ_63ece9a756c7f0a635a61a6da2c949ebdb8906ba
+→ Generate → token generado
 ```
 
 ### 4.3 Crear proyecto en SonarQube
