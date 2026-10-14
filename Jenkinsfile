@@ -16,6 +16,7 @@ pipeline {
         SONAR_PROJECT_KEY  = 'spring-boot-complete'
         SONAR_PROJECT_NAME = 'Spring Boot Complete'
         ARTIFACTORY_REPO   = 'libs-release-local'
+        GRADLE_USER_HOME = '/var/jenkins_home/.gradle'
     }
 
     stages {
