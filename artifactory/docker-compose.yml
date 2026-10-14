@@ -1,0 +1,43 @@
+version: '3.8'
+
+networks:
+  devops-net:
+    external: true
+
+services:
+  artifactory-db:
+    image: postgres:15-alpine
+    container_name: artifactory-db
+    networks:
+      - devops-net
+    environment:
+      POSTGRES_DB: artifactory
+      POSTGRES_USER: artifactory
+      POSTGRES_PASSWORD: PasswordSeguro123!
+    volumes:
+      - artifactory_db_data_v3:/var/lib/postgresql/data  # Cambiamos a v3 para asegurar limpieza
+    restart: unless-stopped
+
+  artifactory:
+    image: releases-docker.jfrog.io/jfrog/artifactory-oss:latest
+    container_name: artifactory
+    networks:
+      - devops-net
+    depends_on:
+      - artifactory-db
+    ports:
+      - "8081:8081"
+      - "8082:8082"
+    volumes:
+      - artifactory_data_v3:/var/opt/jfrog/artifactory    # Cambiamos a v3 para asegurar limpieza
+    environment:
+      - JF_SHARED_DATABASE_TYPE=postgresql
+      - JF_SHARED_DATABASE_DRIVER=org.postgresql.Driver  # <--- FUERZA ESTO AQUÍ
+      - JF_SHARED_DATABASE_URL=jdbc:postgresql://artifactory-db:5432/artifactory
+      - JF_SHARED_DATABASE_USERNAME=artifactory
+      - JF_SHARED_DATABASE_PASSWORD=PasswordSeguro123!
+    restart: unless-stopped
+
+volumes:
+  artifactory_db_data_v3:
+  artifactory_data_v3:
