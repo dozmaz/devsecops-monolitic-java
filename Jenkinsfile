@@ -21,10 +21,14 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Forzar clonación omitiendo verificación SSL directamente en el comando
+                // 1. Borrar todos los archivos ocultos y visibles del directorio actual
+                deleteDir() 
+                
+                // 2. Ejecutar la clonación omitiendo el certificado SSL
                 sh 'git -c http.sslVerify=false clone https://github.com/dozmaz/devsecops-monolitic-java.git .'
             }
         }
+
         // --- STAGE 1: Build ---------------------------
         stage('Build') {
             steps {
