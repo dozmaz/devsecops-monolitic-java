@@ -19,11 +19,17 @@ pipeline {
     }
 
     stages {
-
+        stage('Checkout') {
+            steps {
+                // Forzar clonación omitiendo verificación SSL directamente en el comando
+                sh 'git -c http.sslVerify=false clone https://github.com/dozmaz/devsecops-monolitic-java.git .'
+            }
+        }
         // --- STAGE 1: Build ---------------------------
         stage('Build') {
             steps {
                 echo '=== STAGE: Build ==='
+                sh 'chmod +x ./gradlew'
                 sh './gradlew clean assemble --no-daemon'
             }
             post {
