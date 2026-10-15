@@ -1,4 +1,4 @@
-# Pipeline CI/CD — Spring Boot
+# Pipeline CI/CD — Tipo de Aplicación : Monolítica - Spring Boot
 
 Pipeline de integración y entrega continua para una aplicación Spring Boot monolítica.
 
@@ -145,6 +145,8 @@ stage('Sonar') {
 ```
 
 ![SonarQube - Resultado del análisis](images/sonarqube.jpg)
+
+![SonarQube - Resultado del análisis](images/sonarqube2.jpg)
 
 ---
 
