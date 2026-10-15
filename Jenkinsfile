@@ -16,6 +16,7 @@ pipeline {
         SONAR_PROJECT_KEY  = 'spring-boot-complete'
         SONAR_PROJECT_NAME = 'Spring Boot Complete'
         ARTIFACTORY_REPO   = 'libs-release-local'
+        ARTIFACTORY_PASS = credentials('artifactory-credentials')
         GRADLE_USER_HOME = '/var/jenkins_home/.gradle'
     }
 
@@ -119,18 +120,17 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                    curl -u admin:${ARTIFACTORY_PASS} \
-                    http://artifactory:8082/artifactory/libs-release-local/\
-        com/example/spring-boot-complete/${BUILD_NUMBER}/spring-boot-complete-0.0.1-SNAPSHOT.jar \
-                    -o app.jar
+                    curl -f -u ${ARTIFACTORY_PASS_USR}:${ARTIFACTORY_PASS_PSW} \
+                      "http://artifactory:8082/artifactory/libs-release-local/com/example/spring-boot-complete/${BUILD_NUMBER}/spring-boot-complete-0.0.1-SNAPSHOT.jar" \
+                      -o app.jar
                     docker stop spring-app || true
                     docker rm   spring-app || true
                     docker run -d --name spring-app \
-                    --network devops-net \
-                    -p 8090:8080 \
-                    -v \$(pwd)/app.jar:/app.jar \
-                    eclipse-temurin:21-jre \
-                    java -jar /app.jar
+                      --network devops-net \
+                      -p 8090:8080 \
+                      -v \$(pwd)/app.jar:/app.jar \
+                      eclipse-temurin:21-jre \
+                      java -jar /app.jar
                 """
             }
         }
