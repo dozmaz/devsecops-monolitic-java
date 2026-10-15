@@ -21,7 +21,6 @@ pipeline {
     }
 
     options {
-        // Skip default 10-minute checkout so we can use our custom timeout
         skipDefaultCheckout(true)
     }
 
@@ -119,19 +118,33 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh """
-                    curl -f -u ${ARTIFACTORY_PASS_USR}:${ARTIFACTORY_PASS_PSW} \
-                      "http://artifactory:8082/artifactory/libs-release-local/com/example/spring-boot-complete/${BUILD_NUMBER}/spring-boot-complete-0.0.1-SNAPSHOT.jar" \
-                      -o app.jar
-                    docker stop spring-app || true
-                    docker rm   spring-app || true
-                    docker run -d --name spring-app \
-                      --network devops-net \
-                      -p 8090:8080 \
-                      -v \$(pwd)/app.jar:/app.jar \
-                      eclipse-temurin:21-jre \
-                      java -jar /app.jar
-                """
+                withCredentials([usernamePassword(
+                    credentialsId: 'artifactory-credentials',
+                    usernameVariable: 'ART_USER',
+                    passwordVariable: 'ART_PASS'
+                )]) {
+                    sh '''
+                        # Descargar JAR desde Artifactory
+                        curl -f -u ${ART_USER}:${ART_PASS} \
+                          "http://artifactory:8082/artifactory/libs-release-local/com/example/spring-boot-complete/''' + env.BUILD_NUMBER + '''/spring-boot-complete-0.0.1-SNAPSHOT.jar" \
+                          -o app.jar
+
+                        # Crear imagen Docker con el JAR (evita problema de volumen DinD)
+                        printf "FROM eclipse-temurin:21-jre\\nCOPY app.jar /app.jar\\nENTRYPOINT [\\"java\\", \\"-jar\\", \\"/app.jar\\"]\\n" > Dockerfile.app
+                        docker build -t spring-app:''' + env.BUILD_NUMBER + ''' -f Dockerfile.app .
+
+                        # Reemplazar contenedor anterior
+                        docker stop spring-app || true
+                        docker rm   spring-app || true
+                        docker run -d --name spring-app \
+                          --network devops-net \
+                          -p 8090:8080 \
+                          spring-app:''' + env.BUILD_NUMBER + '''
+                    '''
+                }
+            }
+            post {
+                failure { error 'Deploy fallido. Revisa los logs del contenedor spring-app.' }
             }
         }
     }

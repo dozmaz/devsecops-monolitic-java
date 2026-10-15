@@ -57,6 +57,11 @@ docker exec jenkins cat /var/jenkins_home/secrets/initialAdminPassword
 4. Crea el usuario administrador (anota usuario y contraseña).
 5. Confirma la URL de Jenkins (`http://localhost:8080`) → **Save and Finish**.
 
+### 2.4 Instalar docker en jenkins
+
+```bash
+docker exec -u root jenkins bash -c "apt-get update -qq && apt-get install -y -qq docker.io && docker --version"
+```
 ---
 
 ## 3. Instalar los plugins necesarios
