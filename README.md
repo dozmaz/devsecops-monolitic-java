@@ -114,7 +114,7 @@ stage('Testing') {
 
 ---
 
-## Stage: Sonar
+## Stage: SonarQube
 
 Analiza la calidad del código y envía los resultados a SonarQube.  
 El pipeline espera hasta **5 minutos** la evaluación del Quality Gate vía webhook.  
