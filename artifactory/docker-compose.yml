@@ -15,7 +15,14 @@ services:
       POSTGRES_USER: artifactory
       POSTGRES_PASSWORD: PasswordSeguro123!
     volumes:
-      - artifactory_db_data_v3:/var/lib/postgresql/data  # Cambiamos a v3 para asegurar limpieza
+      - artifactory_db_data_v3:/var/lib/postgresql/data
+    # Optimización de PostgreSQL para cargas pesadas de Artifactory
+    command: >
+      postgres
+      -c shared_buffers=512MB
+      -c work_mem=32MB
+      -c checkpoint_completion_target=0.9
+      -c max_wal_size=2GB
     restart: unless-stopped
 
   artifactory:
@@ -29,13 +36,29 @@ services:
       - "8081:8081"
       - "8082:8082"
     volumes:
-      - artifactory_data_v3:/var/opt/jfrog/artifactory    # Cambiamos a v3 para asegurar limpieza
+      - artifactory_data_v3:/var/opt/jfrog/artifactory
+    # Asignación explícita de recursos mínimos (Crucial en Docker Desktop Mac/Windows)
+    deploy:
+      resources:
+        limits:
+          cpus: '4'
+          memory: 8g
+        reservations:
+          cpus: '2'
+          memory: 4g
     environment:
       - JF_SHARED_DATABASE_TYPE=postgresql
-      - JF_SHARED_DATABASE_DRIVER=org.postgresql.Driver  # <--- FUERZA ESTO AQUÍ
+      - JF_SHARED_DATABASE_DRIVER=org.postgresql.Driver
       - JF_SHARED_DATABASE_URL=jdbc:postgresql://artifactory-db:5432/artifactory
       - JF_SHARED_DATABASE_USERNAME=artifactory
       - JF_SHARED_DATABASE_PASSWORD=PasswordSeguro123!
+      - JF_SHARED_EXTRAJAVAOPTS=-Xms4g -Xmx4g -Djava.security.egd=file:/dev/./urandom
+      - JF_ARTIFACTORY_DATABASE_MAXOPENCONNECTIONS=100
+      - JF_ARTIFACTORY_DATABASE_MAXIDLECONNECTIONS=50
+      - JF_METADATA_DATABASE_MAXOPENCONNECTIONS=100
+      - JF_JFCONNECT_ENABLED=false
+      - JF_ONEMODEL_ENABLED=false
+      - EXTRA_JAVA_OPTIONS=-Xms2g -Xmx4g -Djava.security.egd=file:/dev/./urandom
     restart: unless-stopped
 
 volumes:

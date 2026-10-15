@@ -19,6 +19,11 @@ pipeline {
         GRADLE_USER_HOME = '/var/jenkins_home/.gradle'
     }
 
+    options {
+        // Skip default 10-minute checkout so we can use our custom timeout
+        skipDefaultCheckout(true)
+    }
+
     stages {
         stage('Checkout') {
             steps {
